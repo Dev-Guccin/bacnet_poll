@@ -18,6 +18,9 @@ const requestArray = [
         ]
     }
 ];
+client.readProperty('192.168.0.19:58833', {type: 0, instance: 1}, 85, (err, value) => {
+    console.log('!!!!!!!value: ', value);
+  });
 client.readPropertyMultiple('192.168.0.19:58833', requestArray, (err, value) => {
     console.log('result: ', value.values[0].values[0].value);
     console.log('result: ', value.values[0].values[1].value);

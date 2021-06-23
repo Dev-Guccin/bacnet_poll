@@ -33,7 +33,7 @@ async function bacnet_poll() {
     //
     //
     //2. whois로 존재하는 오브젝트들 확인 → active
-    //client.whoIs(bacnetConfig.broadcastAddress)
+    client.whoIs(bacnetConfig.broadcastAddress)
     //3. db station에서 데이터를 읽는다.
     console.log("[+] start data polling....")
     idslist = await DBH.get_ids_device()
@@ -46,11 +46,23 @@ async function bacnet_poll() {
 async function bacnet_device_poll(id){
     // device의 id에 해당하는 열들을 list로 받는다.
     console.log("[+] get ids from station id:",id)
-    idslist = await DBH.get_ids_station(id)
-    console.log("[+] available ids device:",id, " stations:",idslist)
-    //이제 순서대로 데이터를 받아온다.
+    let device = await DBH.get_device_from_id(id)
+    let ip_address = `${device.ip_address}`+(device.port == -1?"":":"+device.port)
+    console.log("[+] connect to ip:", ip_address)
+    let idslist = await DBH.get_ids_station(id)
+    console.log("[+] available ids device:",id, " idslist:",idslist, " length:",idslist.length)
     for (let i = 0; i < idslist.length; i++) {
-        DBH.get_station_from_id(idslist[i].id)
+        let station = await DBH.get_station_from_id(idslist[i].id)
+        console.log("station : ", station)
+        if(station.active != 1) continue
+        console.log("readproperty", ip_address, station.object_type, station.object_instance, 85)
+        client.readProperty(ip_address, {type: station.object_type, instance: station.object_instance}, 85, (err, value) => {//85는 presentvalue를 의미한다.
+            console.log('value: ', value);
+            if(value){
+                //데이터를 받았으니 이제 값을 realtime_table에 넣어준다.
+                DBH.realtime_upsert(station.id, station.name,value.values[0].value, station.object)
+            }
+        });
     }
 }
 bacnet_poll()

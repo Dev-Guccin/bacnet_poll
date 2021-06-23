@@ -15,8 +15,10 @@ var STATION={
     Id : '',
     Name : '',
     DeviceId : '',
+    Object : '',
     Object_type:'',
     Object_instance:'',
+    Value_type:'',
     Active : ''
 }
 var Excel = {
@@ -59,9 +61,11 @@ var Excel = {
                             STATION.Id              =sheetData[i][1].value
                             STATION.Name	        =sheetData[i][2].value
                             STATION.DeviceId		=sheetData[i][3].value
-                            STATION.Object_type	    =sheetData[i][4].value
-                            STATION.Object_instance	=sheetData[i][5].value
-                            STATION.Active		    =sheetData[i][6].value
+                            STATION.Object		    =sheetData[i][4].value
+                            STATION.Object_type	    =sheetData[i][5].value
+                            STATION.Object_instance	=sheetData[i][6].value
+                            STATION.Value_type	=sheetData[i][7].value
+                            STATION.Active		    =sheetData[i][8].value
                             // 이걸 DB에 저장해야함
                             console.log(STATION)
                             await DBH.insert_table(page, STATION)

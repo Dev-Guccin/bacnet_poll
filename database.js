@@ -46,8 +46,8 @@ var Database = {
         }
         else {//Station
             return new Promise(function (resolve, reject) {
-                connection.query(`INSERT INTO bacnet_station (id,name,device_id,object_type,object_instance,active)
-                VALUES(${data.Id},'${data.Name}',${data.DeviceId},${data.Object_type},${data.Object_instance},${data.Active})`, function () {
+                connection.query(`INSERT INTO bacnet_station (id,name,device_id,object,object_type,object_instance,value_type,active)
+                VALUES(${data.Id},'${data.Name}',${data.DeviceId},'${data.Object}',${data.Object_type},${data.Object_instance},${data.Value_type},${data.Active})`, function () {
                     // connection.end();
                     resolve();
                 });
@@ -81,6 +81,19 @@ var Database = {
             });
         })
     },
+    get_device_from_id: async function(id){
+        return new Promise(function(resolve, reject){
+            connection.query(`SELECT * FROM bacnet_device WHERE id=${id};`, function (error, rows, fields) {
+                if(error){
+                    console.log(error)
+                    resolve()
+                }
+                else{
+                    resolve(rows[0])
+                }
+            });
+        })
+    },
     get_ids_station: function(device_id){
         console.log("get_ids_station:",device_id)
         return new Promise(function(resolve, reject){
@@ -103,11 +116,17 @@ var Database = {
                     resolve()
                 }
                 else{
-                    console.log(rows)
-                    resolve(rows)
+                    resolve(rows[0])
                 }
             });
         })
+    },
+    realtime_upsert: function (id, object_name, resData, object_type) {
+        connection.query(`insert into realtime_table (id,object_name, logvalue, logtime,object_type, com_type)
+        values (${id},'${object_name}', ${resData}, now(),'${object_type}','bacnet') as t
+        on duplicate key update logvalue = t.logvalue, logtime = t.logtime`, (error, rows, fields) => {
+            if (error) throw error;
+        });
     },
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,17 +174,7 @@ var Database = {
         });
 
     },
-    realtime_upsert: function (object_name, resData, object_type) {
-        // connection = mysql.createConnection(dbconfig);
-        // connection.connect();
-        connection.query(`insert into realtime_table (object_name, logvalue, logtime,object_type, com_type)
-        values ('${object_name}', ${resData}, now(),'${object_type}','mysql') as t
-        on duplicate key update logvalue = t.logvalue, logtime = t.logtime`, (error, rows, fields) => {
-            if (error) throw error;
-        });
-        // connection.end();
-
-    },
+    
     // realtime_insert: function(data){
     //     connection.query(`insert realtime_table(object_name,logtime,object_type,com_type) 
     //     values('${data.object_name}',now(),'${data.object_type}','mysql')`,(error, rows, fields) => {
