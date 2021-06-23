@@ -57,7 +57,7 @@ var Excel = {
                     else if(page ==1){//Station 페이지
                         await DBH.delete_table('bacnet_station')// DB깔끔하게 밀어버리기
                         for (let i = 2; i < sheetData.length; i++) {
-                            if(sheetData[i][1].value == "*") break 
+                            if(sheetData[i][1].value == "*") break
                             STATION.Id              =sheetData[i][1].value
                             STATION.Name	        =sheetData[i][2].value
                             STATION.DeviceId		=sheetData[i][3].value
