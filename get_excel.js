@@ -3,15 +3,16 @@ const DBH  = require('./database.js')
 
 const filePath = './Bacnet.xlsx'
 
-var DEVICE={
+let DEVICE={
     Id :'',
     Name : '',
     IpAddress : '',
     Port : '',
+    Period : '',
     Active : '',
     Available: ''
 }
-var STATION={
+let STATION={
     Id : '',
     Name : '',
     DeviceId : '',
@@ -21,7 +22,7 @@ var STATION={
     Value_type:'',
     Active : ''
 }
-var Excel = {
+let Excel = {
     loadExcelFile:  function(filepath){
         return new Promise(async function(resolve, reject) {
             try{
@@ -46,10 +47,11 @@ var Excel = {
                             DEVICE.Name	        =sheetData[i][2].value
                             DEVICE.IpAddress	=sheetData[i][3].value
                             DEVICE.Port		    =sheetData[i][4].value
-                            DEVICE.Active		=sheetData[i][5].value
-                            DEVICE.Available	=sheetData[i][6].value
+                            DEVICE.Period		=sheetData[i][5].value
+                            DEVICE.Active		=sheetData[i][6].value
+                            DEVICE.Available	=sheetData[i][7].value
                             // 이걸 DB에 저장해야함
-                            console.log(DEVICE)
+                            //console.log(DEVICE)
                             await DBH.insert_table(page, DEVICE)
                             // console.log("DEVICE",DEVICE.Id)
                         }
@@ -67,7 +69,7 @@ var Excel = {
                             STATION.Value_type	=sheetData[i][7].value
                             STATION.Active		    =sheetData[i][8].value
                             // 이걸 DB에 저장해야함
-                            console.log(STATION)
+                            //console.log(STATION)
                             await DBH.insert_table(page, STATION)
                         }
                     }
@@ -75,7 +77,8 @@ var Excel = {
                 console.log("get_excel완료")
                 resolve()
             }catch(e){
-                console.log("load excel error : " ,e) 
+                console.log("load excel error : " ,e)
+                resolve()
             }
         });
     }

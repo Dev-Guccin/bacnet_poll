@@ -1,5 +1,5 @@
-var mysql = require('mysql')
-var dbconfig = {
+const mysql = require('mysql')
+let dbconfig = {
     host: 'localhost',
     user: 'root',
     password: '4msys',
@@ -8,7 +8,7 @@ var dbconfig = {
 const connection = mysql.createConnection(dbconfig);
 connection.connect();
 
-var Database = {
+const Database = {
     select_table: function (table, callback) {
         // connection = mysql.createConnection(dbconfig);
         // connection.connect();
@@ -25,8 +25,9 @@ var Database = {
         // connection = mysql.createConnection(dbconfig);
         // connection.connect();
         return new Promise(function (resolve, reject) {
-            connection.query(`DELETE FROM ${tablename}`, function () {
+            connection.query(`DELETE FROM ${tablename}`, function (err) {
                 // connection.end();
+                if(err){console.log(err); resolve(false)}
                 resolve();
             });
         });
@@ -37,9 +38,13 @@ var Database = {
         // connection.connect();
         if (page == 0) {//Device
             return new Promise(function (resolve, reject) {
-                connection.query(`INSERT INTO bacnet_device (id,name,ip_address,port,active,available) 
-                VALUES(${data.Id},'${data.Name}','${data.IpAddress}',${data.Port},${data.Active},${data.Available})`, function () {
+                connection.query(`INSERT INTO bacnet_device (id,name,ip_address,port,period,active,available) 
+                VALUES(${data.Id},'${data.Name}','${data.IpAddress}',${data.Port},${data.Period},${data.Active},${data.Available})`, function(error, rows, fields)  {
                     // connection.end();
+                    if(error){
+                        console.log(error)
+                        resolve(false)
+                    }
                     resolve();
                 });
             });
@@ -47,8 +52,12 @@ var Database = {
         else {//Station
             return new Promise(function (resolve, reject) {
                 connection.query(`INSERT INTO bacnet_station (id,name,device_id,object,object_type,object_instance,value_type,active)
-                VALUES(${data.Id},'${data.Name}',${data.DeviceId},'${data.Object}',${data.Object_type},${data.Object_instance},${data.Value_type},${data.Active})`, function () {
+                VALUES(${data.Id},'${data.Name}',${data.DeviceId},'${data.Object}',${data.Object_type},${data.Object_instance},${data.Value_type},${data.Active})`, function (error, rows, fields)  {
                     // connection.end();
+                    if(error){
+                        console.log(error)
+                        resolve(false)
+                    }
                     resolve();
                 });
             });
@@ -59,7 +68,7 @@ var Database = {
         //ipaddress
         ipadr = data.split(":")
         console.log(ipadr)
-        connection.query(`UPDATE bacnet_device SET available=1 WHERE ip_address='${ipadr[0]}' and port=${ipadr[1]!=undefined?parseInt(ipadr[1]):-1};`, function (error, rows, fields) {
+        connection.query(`UPDATE bacnet_device SET available=1 WHERE ip_address='${ipadr[0]}' and port=${ipadr[1]!=undefined?parseInt(ipadr[1]):47808};`, function (error, rows, fields) {
             if(error){
                 console.log(error)
             }
@@ -70,7 +79,7 @@ var Database = {
     },
     get_ids_device: async function(){
         return new Promise(function(resolve, reject){
-            connection.query(`SELECT id FROM bacnet_device WHERE active=1 and available=1;`, function (error, rows, fields) {
+            connection.query(`SELECT id,period FROM bacnet_device WHERE active=1 and available=1;`, function (error, rows, fields) {
                 if(error){
                     console.log(error)
                     resolve()
@@ -122,6 +131,7 @@ var Database = {
         })
     },
     realtime_upsert: function (id, object_name, resData, object_type) {
+        console.log("INSERT!!! ", id, object_name, resData, object_type)
         connection.query(`insert into realtime_table (id,object_name, logvalue, logtime,object_type, com_type)
         values (${id},'${object_name}', ${resData}, now(),'${object_type}','bacnet') as t
         on duplicate key update logvalue = t.logvalue, logtime = t.logtime`, (error, rows, fields) => {
