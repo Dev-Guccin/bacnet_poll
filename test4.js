@@ -1,10 +1,7 @@
-async function a() {//10초짜리
-    sum = 0
-    for (let i = 0; i < 500000000; i++) {
-        sum += i
-    }
-    console.log("끝")
-    return 1
-}
+const DBH = require('./database.js')
 
-setInterval(()=>{console.log("t")},5000)
+async function main(){
+    let tmp = await DBH.get_ids_device_available(1)
+    console.log(tmp)
+}
+main()

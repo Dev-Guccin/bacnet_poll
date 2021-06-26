@@ -62,7 +62,6 @@ const Database = {
                 });
             });
         }
-
     },
     set_available: function (data) {
         //ipaddress
@@ -73,13 +72,21 @@ const Database = {
                 console.log(error)
             }
             else{
-                console.log("[+] iam update completed:",rows)
             }
         });
     },
-    get_ids_device: async function(){
+    reset_available: function () {
+        connection.query(`UPDATE bacnet_device SET available=0;`, function (error, rows, fields) {
+            if(error){
+                console.log(error)
+            }
+            else{
+            }
+        });
+    },
+    get_ids_device:async function(){
         return new Promise(function(resolve, reject){
-            connection.query(`SELECT id,period FROM bacnet_device WHERE active=1 and available=1;`, function (error, rows, fields) {
+            connection.query(`SELECT id FROM bacnet_device;`, function (error, rows, fields) {
                 if(error){
                     console.log(error)
                     resolve()
@@ -90,7 +97,20 @@ const Database = {
             });
         })
     },
-    get_device_from_id: async function(id){
+    get_ids_device_available: function(id){
+        return new Promise(function(resolve, reject){
+            connection.query(`SELECT id,period FROM bacnet_device WHERE id=${id} and active=1 and available=1;`, function (error, rows, fields) {
+                if(error){
+                    console.log(error)
+                    resolve()
+                }
+                else{
+                    resolve(rows[0])
+                }
+            });
+        })
+    },
+    get_device_from_id: function(id){
         return new Promise(function(resolve, reject){
             connection.query(`SELECT * FROM bacnet_device WHERE id=${id};`, function (error, rows, fields) {
                 if(error){
